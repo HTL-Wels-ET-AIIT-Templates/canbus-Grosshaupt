@@ -29,6 +29,7 @@
 #include "cancpp.h"
 
 /* Private includes ----------------------------------------------------------*/
+#include "stdbool.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -79,7 +80,7 @@ int main(void)
 	LCD_DisplayStringAtLineMode(39, "copyright CAN Experts!", CENTER_MODE);
 
 	// ToDo: set up CAN peripherals
-
+	canInitHardware();
 
 
 	/* Infinite loop */
@@ -89,6 +90,9 @@ int main(void)
 		HAL_Delay(10);
 
 		// ToDo: send data over CAN when user button has been pressed
+		if (GetUserButtonPressed() == 1){		//extra variable noch damit man ihn rücksetzen kann
+			canSendTask();
+		}
 
 
 

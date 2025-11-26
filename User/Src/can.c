@@ -21,7 +21,7 @@
 /* Private define ------------------------------------------------------------*/
 
 // ToDo: korrekte Prescaler-Einstellung
-#define   CAN1_CLOCK_PRESCALER    1000
+#define   CAN1_CLOCK_PRESCALER    16
 
 /* Private variables ---------------------------------------------------------*/
 CAN_HandleTypeDef     canHandle;
@@ -89,11 +89,30 @@ void canSendTask(void) {
 
 
 	// ToDo prepare send data
+	CAN_TxHeaderTypeDef txHeader;
+	CAN_RxHeaderTypeDef rxHeader;
 
+	uint8_t txData[8];
+	uint8_t rxData[8];
+
+	txHeader.StdId = 0x1AB;
+	txHeader.ExtId = 0x00;
+	txHeader.RTR = CAN_RTR_DATA;
+	txHeader.DLC = 2;
+	txData [0] = 0xC3;
+	txData[1] = var;
 
 
 	// ToDo send CAN frame
 
+
+	if (HAL_CAN_GetTxMailboxesFreeLevel(&canHandle) != 3){
+
+	}
+
+	if (HAL_CAN_AddTxMessage(&canHandle, &txHeader, txData, &txMailbox) != HAL_OK){	//Mailbox funktioniert so nicht
+
+	}
 
 
 	// ToDo display send counter and send data
