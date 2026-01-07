@@ -82,6 +82,7 @@ void canSendTask(void) {
 	// ToDo declare the required variables
 	static unsigned int sendCnt = 0;
 
+	uint32_t txMailbox;
 
 
 	// ToDo (2): get temperature value
@@ -90,17 +91,26 @@ void canSendTask(void) {
 
 	// ToDo prepare send data
 	CAN_TxHeaderTypeDef txHeader;
+
 	CAN_RxHeaderTypeDef rxHeader;
 
 	uint8_t txData[8];
 	uint8_t rxData[8];
 
-	txHeader.StdId = 0x1AB;
+	txHeader.StdId = 0x123;
 	txHeader.ExtId = 0x00;
+	txHeader.IDE = CAN_ID_STD;
 	txHeader.RTR = CAN_RTR_DATA;
-	txHeader.DLC = 2;
+	txHeader.DLC = 8;
+	txHeader.TransmitGlobalTime = DISABLE;
 	txData [0] = 0xC3;
 	txData[1] = var;
+
+
+
+
+
+
 
 
 	// ToDo send CAN frame
@@ -154,6 +164,7 @@ void canReceiveTask(void) {
  * Initialize GPIOs for CAN
  */
 static void initGpio(void)
+
 {
 	// TX an PB9 -> Probleme beim Senden, LCD rauscht
 	// RX an PB8 -> Probleme beim Senden, LCD rauscht
@@ -163,7 +174,7 @@ static void initGpio(void)
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
 	canPins.Alternate = GPIO_AF9_CAN1;
-	canPins.Mode = GPIO_MODE_AF_OD;
+	canPins.Mode = GPIO_MODE_AF_PP;
 	canPins.Pin = GPIO_PIN_8 | GPIO_PIN_9;
 	canPins.Pull = GPIO_PULLUP;
 	canPins.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -191,7 +202,7 @@ static void initCanPeripheral(void) {
 	canHandle.Init.AutoRetransmission = ENABLE;
 	canHandle.Init.ReceiveFifoLocked = DISABLE;
 	canHandle.Init.TransmitFifoPriority = DISABLE;
-	canHandle.Init.Mode = CAN_MODE_NORMAL;
+	canHandle.Init.Mode = CAN_MODE_LOOPBACK;
 	canHandle.Init.SyncJumpWidth = CAN_SJW_1TQ;
 
 	// CAN Baudrate
