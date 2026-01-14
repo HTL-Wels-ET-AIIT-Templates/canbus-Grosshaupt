@@ -91,11 +91,14 @@ void canSendTask(void) {
 
 	// ToDo prepare send data
 	CAN_TxHeaderTypeDef txHeader;
-
-	CAN_RxHeaderTypeDef rxHeader;
-
 	uint8_t txData[8];
-	uint8_t rxData[8];
+
+
+
+
+
+
+	//Header vorbereiten
 
 	txHeader.StdId = 0x123;
 	txHeader.ExtId = 0x00;
@@ -103,13 +106,11 @@ void canSendTask(void) {
 	txHeader.RTR = CAN_RTR_DATA;
 	txHeader.DLC = 8;
 	txHeader.TransmitGlobalTime = DISABLE;
-	txData [0] = 0xC3;
-	txData[1] = var;
+	//txData [0] = 0xC3;
+	//txData[1] = var;
 
-
-
-
-
+	//Nutzdaten
+	txData[0] = sendCnt & 0xAF;
 
 
 
@@ -118,13 +119,19 @@ void canSendTask(void) {
 
 	if (HAL_CAN_GetTxMailboxesFreeLevel(&canHandle) != 3){
 
+
+
+		if (HAL_CAN_AddTxMessage(&canHandle, &txHeader, txData, &txMailbox) != HAL_OK){	//Mailbox funktioniert so nicht
+			sendCnt++;
+			LCD_SetPrintPosition(5,15);
+			printf("%5d", sendCnt);
+
+			LCD_SetPrintPosition(11,1);
+			printf("%02X", txData[0]);
+
+		}
+
 	}
-
-	if (HAL_CAN_AddTxMessage(&canHandle, &txHeader, txData, &txMailbox) != HAL_OK){	//Mailbox funktioniert so nicht
-
-	}
-
-
 	// ToDo display send counter and send data
 
 
@@ -138,6 +145,26 @@ void canSendTask(void) {
  */
 void canReceiveTask(void) {
 	static unsigned int recvCnt = 0;
+
+	CAN_RxHeaderTypeDef rxHeader;
+	uint8_t rxData[8];
+
+
+
+
+	if (HAL_CAN_GetRxFifoFillLevel(&canHandle, CAN_RX_FIFO0) > 0) {
+
+		HAL_CAN_GetRxMessage(&canHandle, CAN_RX_FIFO0, &rxHeader, rxData);
+		recvCnt++;
+
+		LCD_SetPrintPosition(7,15);
+		printf("%5d", recvCnt);
+
+		LCD_SetPrintPosition(17,1);
+		printf("%02X", rxData[0]);
+	}
+
+
 
 
 
@@ -202,7 +229,7 @@ static void initCanPeripheral(void) {
 	canHandle.Init.AutoRetransmission = ENABLE;
 	canHandle.Init.ReceiveFifoLocked = DISABLE;
 	canHandle.Init.TransmitFifoPriority = DISABLE;
-	canHandle.Init.Mode = CAN_MODE_LOOPBACK;
+	canHandle.Init.Mode = CAN_MODE_LOOPBACK;  //Wenn man es mit 2 boards macht CAN_MODE_NORMAL
 	canHandle.Init.SyncJumpWidth = CAN_SJW_1TQ;
 
 	// CAN Baudrate

@@ -80,7 +80,8 @@ int main(void)
 	LCD_DisplayStringAtLineMode(39, "copyright CAN Expert Elisabeth Grosshaupt!", CENTER_MODE);
 
 	// ToDo: set up CAN peripherals
-	canInitHardware();
+	//canInitHardware();
+	canInit();
 
 
 	/* Infinite loop */
@@ -97,6 +98,7 @@ int main(void)
 
 
 		// ToDo: check if data has been received
+		canReceiveTask();
 
 
 		// display timer
