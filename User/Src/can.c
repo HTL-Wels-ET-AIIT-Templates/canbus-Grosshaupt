@@ -78,7 +78,13 @@ void canInit(void) {
  * @param none
  * @return none
  */
+
+//happens wenn user Button gepressed is
 void canSendTask(void) {
+
+
+
+
 	// ToDo declare the required variables
 	static unsigned int sendCnt = 0;
 
@@ -94,12 +100,7 @@ void canSendTask(void) {
 	uint8_t txData[8];
 
 
-
-
-
-
 	//Header vorbereiten
-
 	txHeader.StdId = 0x123;
 	txHeader.ExtId = 0x00;
 	txHeader.IDE = CAN_ID_STD;
@@ -113,16 +114,23 @@ void canSendTask(void) {
 	txData[0] = sendCnt & 0xAF;
 
 
+	//float Temperature = tempSensorGetTemperature();
+
+
 
 	// ToDo send CAN frame
 
+	if (HAL_CAN_GetTxMailboxesFreeLevel(&canHandle) >0){
 
-	if (HAL_CAN_GetTxMailboxesFreeLevel(&canHandle) != 3){
+			//Test ab wann er nicht das macht was er soll
+			LCD_SetPrintPosition(3,19);
+			printf("Send Data should happen");
 
 
-
-		if (HAL_CAN_AddTxMessage(&canHandle, &txHeader, txData, &txMailbox) != HAL_OK){	//Mailbox funktioniert so nicht
+		if (HAL_CAN_AddTxMessage(&canHandle, &txHeader, txData, &txMailbox) == HAL_OK){	//Mailbox funktioniert so nicht
 			sendCnt++;
+
+			// ToDo display send counter and send data
 			LCD_SetPrintPosition(5,15);
 			printf("%5d", sendCnt);
 
@@ -132,9 +140,6 @@ void canSendTask(void) {
 		}
 
 	}
-	// ToDo display send counter and send data
-
-
 
 }
 
@@ -151,9 +156,11 @@ void canReceiveTask(void) {
 
 
 
+	// ToDo: check if CAN frame has been received
 
 	if (HAL_CAN_GetRxFifoFillLevel(&canHandle, CAN_RX_FIFO0) > 0) {
 
+	// ToDo: Get CAN frame from RX fifo
 		HAL_CAN_GetRxMessage(&canHandle, CAN_RX_FIFO0, &rxHeader, rxData);
 		recvCnt++;
 
@@ -162,28 +169,16 @@ void canReceiveTask(void) {
 
 		LCD_SetPrintPosition(17,1);
 		printf("%02X", rxData[0]);
-	}
 
 
-
-
-
-	// ToDo: check if CAN frame has been received
-
-
-
-
-	// ToDo: Get CAN frame from RX fifo
-
-
-
-	// ToDo: Process received CAN Frame (extract data)
-
-
+		// ToDo: Process received CAN Frame (extract data)
+		uint32_t id = rxHeader.StdId;
 
 	// ToDo display recv counter and recv data
+		LCD_SetPrintPosition(20,1);
+		printf("ID: %lx | Counter: %d | Data: %d\n", id, recvCnt, rxData[0]);
 
-
+	}
 
 }
 
@@ -214,6 +209,7 @@ static void initGpio(void)
  * No Filters are applied.
  * IRQs are enabled
  */
+
 static void initCanPeripheral(void) {
 
 	CAN_FilterTypeDef canFilter;
